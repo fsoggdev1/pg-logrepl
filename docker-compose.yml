@@ -1,5 +1,7 @@
 services:
   master:
+    ports:
+      - 5430:5432
     image: postgres:16.1-alpine3.19
     container_name: logrepl_pg_master
     volumes:
@@ -10,6 +12,8 @@ services:
       POSTGRES_DB: postgres
     restart: unless-stopped
   replica1:
+    ports:
+      - 5431:5432
     image: postgres:15.5-alpine3.19
     container_name: logrepl_pg_replica1
     volumes:
@@ -20,6 +24,8 @@ services:
       POSTGRES_DB: postgres
     restart: unless-stopped
   replica2:
+    ports:
+      - 5432:5432
     image: postgres:14.10-alpine3.19
     container_name: logrepl_pg_replica2
     volumes:
