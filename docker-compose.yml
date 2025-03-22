@@ -1,40 +1,48 @@
+x-postgres-common:
+  &postgres-common
+  environment:
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_DB: postgres
+  restart: unless-stopped
+  healthcheck:
+    test: 'pg_isready -U user --dbname=postgres'
+    interval: 10s
+    timeout: 5s
+    retries: 5
+  command: |
+    postgres 
+    -c wal_level=logical
+    -c hot_standby=on 
+    -c max_wal_senders=10 
+    -c max_replication_slots=10 
+    -c hot_standby_feedback=on
+
 services:
   master:
+    <<: *postgres-common
     ports:
       - 5430:5432
     image: postgres:16.1-alpine3.19
     container_name: logrepl_pg_master
     volumes:
       - logrepl_pg_master-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    restart: unless-stopped
   replica1:
+    <<: *postgres-common
     ports:
       - 5431:5432
     image: postgres:15.5-alpine3.19
     container_name: logrepl_pg_replica1
     volumes:
       - logrepl_pg_replica1-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    restart: unless-stopped
   replica2:
+    <<: *postgres-common
     ports:
       - 5432:5432
     image: postgres:14.10-alpine3.19
     container_name: logrepl_pg_replica2
     volumes:
       - logrepl_pg_replica2-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    restart: unless-stopped
 volumes:
   logrepl_pg_master-data:
     name: logrepl_pg_master-data
@@ -42,3 +50,4 @@ volumes:
     name: logrepl_pg_replica1-data
   logrepl_pg_replica2-data:
     name: logrepl_pg_replica2-data
+
