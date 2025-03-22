@@ -1,0 +1,3 @@
+DROP PUBLICATION IF EXISTS my_publication;
+CREATE PUBLICATION my_publication FOR ALL TABLES;
+

@@ -6,7 +6,7 @@ x-postgres-common:
     POSTGRES_DB: postgres
   restart: unless-stopped
   healthcheck:
-    test: 'pg_isready -U user --dbname=postgres'
+    test: 'pg_isready -U postgres --dbname=postgres'
     interval: 10s
     timeout: 5s
     retries: 5
@@ -26,6 +26,8 @@ services:
     image: postgres:16.1-alpine3.19
     container_name: logrepl_pg_master
     volumes:
+      - ./00_init.sql:/docker-entrypoint-initdb.d/00_init.sql
+      - ./01_init_master.sql:/docker-entrypoint-initdb.d/01_init_master.sql
       - logrepl_pg_master-data:/var/lib/postgresql/data
   replica1:
     <<: *postgres-common
@@ -33,7 +35,12 @@ services:
       - 5431:5432
     image: postgres:15.5-alpine3.19
     container_name: logrepl_pg_replica1
+    depends_on:
+      master:
+        condition: service_healthy
     volumes:
+      - ./00_init.sql:/docker-entrypoint-initdb.d/00_init.sql
+      - ./01_init_replica1.sql:/docker-entrypoint-initdb.d/01_init_replica1.sql
       - logrepl_pg_replica1-data:/var/lib/postgresql/data
   replica2:
     <<: *postgres-common
@@ -41,7 +48,12 @@ services:
       - 5432:5432
     image: postgres:14.10-alpine3.19
     container_name: logrepl_pg_replica2
+    depends_on:
+      master:
+        condition: service_healthy
     volumes:
+      - ./00_init.sql:/docker-entrypoint-initdb.d/00_init.sql
+      - ./01_init_replica2.sql:/docker-entrypoint-initdb.d/01_init_replica2.sql
       - logrepl_pg_replica2-data:/var/lib/postgresql/data
 volumes:
   logrepl_pg_master-data:
